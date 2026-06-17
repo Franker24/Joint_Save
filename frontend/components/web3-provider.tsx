@@ -1,13 +1,6 @@
 "use client"
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from "react"
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 import {
   StellarWalletsKit,
   WalletNetwork,
@@ -33,13 +26,10 @@ const queryClient = new QueryClient({
 
 export const STELLAR_NETWORK = WalletNetwork.TESTNET
 export const STELLAR_RPC_URL =
-  process.env.NEXT_PUBLIC_STELLAR_RPC_URL ||
-  "https://soroban-testnet.stellar.org"
+  process.env.NEXT_PUBLIC_STELLAR_RPC_URL || "https://soroban-testnet.stellar.org"
 export const STELLAR_HORIZON_URL =
-  process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL ||
-  "https://horizon-testnet.stellar.org"
-export const STELLAR_NETWORK_PASSPHRASE =
-  "Test SDF Network ; September 2015"
+  process.env.NEXT_PUBLIC_STELLAR_HORIZON_URL || "https://horizon-testnet.stellar.org"
+export const STELLAR_NETWORK_PASSPHRASE = "Test SDF Network ; September 2015"
 
 // ── Context ───────────────────────────────────────────────────────────────────
 
@@ -77,12 +67,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     const walletKit = new StellarWalletsKit({
       network: STELLAR_NETWORK,
       selectedWalletId: FREIGHTER_ID,
-      modules: [
-        new FreighterModule(),
-        new xBullModule(),
-        new AlbedoModule(),
-        new LobstrModule(),
-      ],
+      modules: [new FreighterModule(), new xBullModule(), new AlbedoModule(), new LobstrModule()],
     })
     setKit(walletKit)
 

@@ -14,7 +14,7 @@ import { fetchIsPaused, fetchPoolAdmin } from "@/hooks/useJointSaveContracts"
 interface Pool {
   id: string
   name: string
-  type: 'rotational' | 'target' | 'flexible'
+  type: "rotational" | "target" | "flexible"
   contract_address: string
   token_address: string
 }
@@ -30,13 +30,13 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
 
   useEffect(() => {
     fetch(`/api/pools?id=${id}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setPool(data)
         setLoading(false)
       })
-      .catch(err => {
-        console.error('Failed to load pool:', err)
+      .catch((err) => {
+        console.error("Failed to load pool:", err)
         setLoading(false)
       })
   }, [id])
@@ -53,7 +53,9 @@ export default function GroupPage({ params }: { params: Promise<{ id: string }> 
     } catch {}
   }, [pool])
 
-  useEffect(() => { refreshPoolState() }, [refreshPoolState])
+  useEffect(() => {
+    refreshPoolState()
+  }, [refreshPoolState])
 
   if (loading) return <div>Loading...</div>
   if (!pool) return <div>Pool not found</div>

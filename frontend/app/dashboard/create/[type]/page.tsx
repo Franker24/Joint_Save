@@ -40,7 +40,9 @@ export default function CreateGroupPage({ params }: { params: Promise<{ type: st
 
           <Card className="p-8">
             <h1 className="text-3xl font-bold mb-2">{titles[type as keyof typeof titles]}</h1>
-            <p className="text-muted-foreground mb-8">Fill in the details to create your savings group</p>
+            <p className="text-muted-foreground mb-8">
+              Fill in the details to create your savings group
+            </p>
 
             {type === "rotational" && <RotationalForm />}
             {type === "target" && <TargetForm />}

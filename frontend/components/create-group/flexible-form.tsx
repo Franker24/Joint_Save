@@ -23,9 +23,15 @@ export function FlexibleForm() {
   const { address } = useStellar()
   const [members, setMembers] = useState<string[]>([""])
   const [error, setError] = useState("")
-  const [step, setStep] = useState<"idle" | "deploying" | "initializing" | "registering" | "saving">("idle")
+  const [step, setStep] = useState<
+    "idle" | "deploying" | "initializing" | "registering" | "saving"
+  >("idle")
   const [formData, setFormData] = useState({
-    name: "", description: "", minimumDeposit: "", enableYield: false, withdrawalFee: "1",
+    name: "",
+    description: "",
+    minimumDeposit: "",
+    enableYield: false,
+    withdrawalFee: "1",
   })
 
   const { deploy } = useDeployPool()
@@ -38,13 +44,18 @@ export function FlexibleForm() {
 
   const addMember = () => setMembers([...members, ""])
   const removeMember = (i: number) => setMembers(members.filter((_, idx) => idx !== i))
-  const updateMember = (i: number, v: string) => { const n = [...members]; n[i] = v; setMembers(n) }
+  const updateMember = (i: number, v: string) => {
+    const n = [...members]
+    n[i] = v
+    setMembers(n)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     if (!address) return setError("Please connect your wallet first")
-    if (validMembers.length < 2) return setError("Need at least 2 valid Stellar addresses (you + 1 other)")
+    if (validMembers.length < 2)
+      return setError("Need at least 2 valid Stellar addresses (you + 1 other)")
     if (!formData.name) return setError("Please enter a group name")
     if (!formData.minimumDeposit) return setError("Please enter a minimum deposit")
 
@@ -56,7 +67,8 @@ export function FlexibleForm() {
       // withdrawalFee is in %, convert to bps (1% = 100 bps)
       const withdrawalFeeBps = Math.round(parseFloat(formData.withdrawalFee) * 100)
       await initFlexible(contractId, {
-        token: TOKEN === "native" ? "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC" : TOKEN,
+        token:
+          TOKEN === "native" ? "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC" : TOKEN,
         members: validMembers,
         minimumDeposit: formData.minimumDeposit,
         withdrawalFeeBps,
@@ -69,8 +81,9 @@ export function FlexibleForm() {
       setStep("registering")
       try {
         await register(address, contractId)
-      } catch (regErr: any) {
-        console.warn("Factory registration skipped:", regErr.message)
+      } catch (regErr) {
+        const msg = regErr instanceof Error ? regErr.message : String(regErr)
+        console.warn("Factory registration skipped:", msg)
       }
 
       setStep("saving")
@@ -93,8 +106,9 @@ export function FlexibleForm() {
       if (!res.ok) throw new Error("Failed to save pool metadata")
       const pool = await res.json()
       router.push(`/dashboard/group/${pool.id}`)
-    } catch (err: any) {
-      setError(err.message || "Failed to create group")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to create group"
+      setError(msg)
       setStep("idle")
     }
   }
@@ -124,53 +138,93 @@ export function FlexibleForm() {
 
       <div className="space-y-2">
         <Label htmlFor="name">Group Name</Label>
-        <Input id="name" placeholder="e.g., Emergency Fund" value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+        <Input
+          id="name"
+          placeholder="e.g., Emergency Fund"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Description (Optional)</Label>
-        <Textarea id="description" placeholder="Describe the purpose of this flexible pool"
-          value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
+        <Textarea
+          id="description"
+          placeholder="Describe the purpose of this flexible pool"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          rows={3}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="minimum">Minimum Deposit (XLM)</Label>
-          <Input id="minimum" type="number" step="0.01" placeholder="50" value={formData.minimumDeposit}
-            onChange={(e) => setFormData({ ...formData, minimumDeposit: e.target.value })} required />
+          <Input
+            id="minimum"
+            type="number"
+            step="0.01"
+            placeholder="50"
+            value={formData.minimumDeposit}
+            onChange={(e) => setFormData({ ...formData, minimumDeposit: e.target.value })}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="fee">Withdrawal Fee (%)</Label>
-          <Input id="fee" type="number" step="0.1" placeholder="1" value={formData.withdrawalFee}
-            onChange={(e) => setFormData({ ...formData, withdrawalFee: e.target.value })} required />
+          <Input
+            id="fee"
+            type="number"
+            step="0.1"
+            placeholder="1"
+            value={formData.withdrawalFee}
+            onChange={(e) => setFormData({ ...formData, withdrawalFee: e.target.value })}
+            required
+          />
         </div>
       </div>
 
       <div className="flex items-center justify-between p-4 rounded-lg border border-border">
         <div className="space-y-0.5">
           <Label htmlFor="yield">Enable Yield Generation</Label>
-          <p className="text-sm text-muted-foreground">Stake idle funds in Stellar DeFi protocols for passive income</p>
+          <p className="text-sm text-muted-foreground">
+            Stake idle funds in Stellar DeFi protocols for passive income
+          </p>
         </div>
-        <input id="yield" type="checkbox" checked={formData.enableYield}
+        <input
+          id="yield"
+          type="checkbox"
+          checked={formData.enableYield}
           onChange={(e) => setFormData({ ...formData, enableYield: e.target.checked })}
-          className="h-4 w-4 rounded" />
+          className="h-4 w-4 rounded"
+        />
       </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Label>Member Stellar Addresses</Label>
           <Button type="button" variant="outline" size="sm" onClick={addMember}>
-            <Plus className="h-4 w-4 mr-1" />Add Member
+            <Plus className="h-4 w-4 mr-1" />
+            Add Member
           </Button>
         </div>
         <div className="space-y-3">
           <div className="flex gap-2 items-center">
-            <Input value={address || ""} readOnly disabled className="font-mono text-xs opacity-70" />
+            <Input
+              value={address || ""}
+              readOnly
+              disabled
+              className="font-mono text-xs opacity-70"
+            />
             <span className="text-xs text-muted-foreground whitespace-nowrap">You</span>
           </div>
           {members.map((member, i) => (
             <div key={i} className="flex gap-2">
-              <Input placeholder="G..." value={member} onChange={(e) => updateMember(i, e.target.value)} />
+              <Input
+                placeholder="G..."
+                value={member}
+                onChange={(e) => updateMember(i, e.target.value)}
+              />
               {members.length > 1 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removeMember(i)}>
                   <X className="h-4 w-4" />
@@ -191,8 +245,19 @@ export function FlexibleForm() {
             <li>Yield Generation: {formData.enableYield ? "Enabled" : "Disabled"}</li>
           </ul>
         </div>
-        <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isCreating}>
-          {isCreating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{stepLabel[step]}</> : "Create Flexible Pool"}
+        <Button
+          type="submit"
+          className="w-full bg-primary hover:bg-primary/90"
+          disabled={isCreating}
+        >
+          {isCreating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {stepLabel[step]}
+            </>
+          ) : (
+            "Create Flexible Pool"
+          )}
         </Button>
       </div>
     </form>

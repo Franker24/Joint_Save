@@ -2,7 +2,15 @@
 
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpRight, ArrowDownLeft, UserPlus, Settings, Loader2, ExternalLink, RefreshCw } from "lucide-react"
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  UserPlus,
+  Settings,
+  Loader2,
+  ExternalLink,
+  RefreshCw,
+} from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { fetchContractEvents, ActivityEvent } from "@/hooks/useJointSaveContracts"
@@ -34,9 +42,7 @@ function mergeAndDedupe(onchain: Activity[], offchain: Activity[]): Activity[] {
     seen.add(key)
     merged.push(a)
   }
-  return merged.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )
+  return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
 
 export function GroupActivity({
@@ -56,7 +62,11 @@ export function GroupActivity({
   const fetchActivities = useCallback(
     async (isAutoRefresh = false) => {
       try {
-        isAutoRefresh ? setRefreshing(true) : setLoading(true)
+        if (isAutoRefresh) {
+          setRefreshing(true)
+        } else {
+          setLoading(true)
+        }
 
         const [poolRes, onchainEvents] = await Promise.allSettled([
           fetch(`/api/pools?id=${groupId}`).then((r) => r.json()),
@@ -70,8 +80,7 @@ export function GroupActivity({
             ? poolRes.value.pool_activity
             : []
 
-        const onchain: Activity[] =
-          onchainEvents.status === "fulfilled" ? onchainEvents.value : []
+        const onchain: Activity[] = onchainEvents.status === "fulfilled" ? onchainEvents.value : []
 
         setAllActivities(mergeAndDedupe(onchain, supabaseRows.map(toActivity)))
       } catch (err) {
@@ -157,8 +166,8 @@ export function GroupActivity({
                     activity.activity_type === "deposit"
                       ? "bg-primary/10"
                       : activity.activity_type === "payout"
-                      ? "bg-accent/10"
-                      : "bg-muted"
+                        ? "bg-accent/10"
+                        : "bg-muted"
                   }`}
                 >
                   {activity.activity_type === "deposit" && (
@@ -178,15 +187,17 @@ export function GroupActivity({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <p className="font-medium text-sm capitalize">
-                      {({
-                        deposit: "Deposit",
-                        payout: "Payout",
-                        withdraw: "Withdraw",
-                        complete: "Pool Complete",
-                        member_joined: "Member Joined",
-                        pool_created: "Pool Created",
-                        yield: "Yield Distributed",
-                      } as Record<string, string>)[activity.activity_type] ?? activity.activity_type}
+                      {(
+                        {
+                          deposit: "Deposit",
+                          payout: "Payout",
+                          withdraw: "Withdraw",
+                          complete: "Pool Complete",
+                          member_joined: "Member Joined",
+                          pool_created: "Pool Created",
+                          yield: "Yield Distributed",
+                        } as Record<string, string>
+                      )[activity.activity_type] ?? activity.activity_type}
                     </p>
                     {activity.amount != null && (
                       <Badge variant="secondary">{activity.amount.toFixed(2)} XLM</Badge>

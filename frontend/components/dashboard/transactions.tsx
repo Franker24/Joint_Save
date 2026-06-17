@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpRight, ArrowDownLeft, Clock, Loader2 } from "lucide-react"
+import { ArrowUpRight, ArrowDownLeft, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
 
@@ -21,25 +21,25 @@ export function Transactions() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("pool_activity")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(20)
+
+        if (error) throw error
+        setActivities(data || [])
+      } catch (err) {
+        console.error("Failed to fetch activities:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchActivities()
   }, [])
-
-  const fetchActivities = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('pool_activity')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20)
-
-      if (error) throw error
-      setActivities(data || [])
-    } catch (err) {
-      console.error('Failed to fetch activities:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -58,18 +58,18 @@ export function Transactions() {
 
       <Card className="divide-y divide-border">
         {activities.length === 0 ? (
-          <div className="p-6 text-center text-muted-foreground">
-            No transactions yet
-          </div>
+          <div className="p-6 text-center text-muted-foreground">No transactions yet</div>
         ) : (
           activities.map((activity) => (
             <div key={activity.id} className="p-6 hover:bg-muted/30 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                    activity.activity_type === 'deposit' ? 'bg-primary/10' : 'bg-accent/10'
-                  }`}>
-                    {activity.activity_type === 'deposit' ? (
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                      activity.activity_type === "deposit" ? "bg-primary/10" : "bg-accent/10"
+                    }`}
+                  >
+                    {activity.activity_type === "deposit" ? (
                       <ArrowUpRight className="h-6 w-6 text-primary" />
                     ) : (
                       <ArrowDownLeft className="h-6 w-6 text-accent" />

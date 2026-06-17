@@ -41,10 +41,15 @@ interface MyGroupsProps {
   onCreateClick?: () => void
 }
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } }
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+}
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }
 
-async function fetchLiveBalance(pool: Pool): Promise<{ totalSaved: number; progress: number; progressLabel: string }> {
+async function fetchLiveBalance(
+  pool: Pool
+): Promise<{ totalSaved: number; progress: number; progressLabel: string }> {
   const isPending = !pool.contract_address || pool.contract_address === "pending_deployment"
   if (isPending) return { totalSaved: 0, progress: 0, progressLabel: "Pending deployment" }
 
@@ -78,15 +83,19 @@ async function fetchLiveBalance(pool: Pool): Promise<{ totalSaved: number; progr
       const totalSaved = stroopsToXlm(state.totalBalance)
       // Use minimum_deposit as a soft goal per member if available
       const softGoal = (pool.minimum_deposit || 0) * (pool.members_count || 1)
-      const progress = softGoal > 0
-        ? Math.min(100, Math.round((totalSaved / softGoal) * 100))
-        : state.isActive ? 50 : 100 // active = in progress, inactive = complete
+      const progress =
+        softGoal > 0
+          ? Math.min(100, Math.round((totalSaved / softGoal) * 100))
+          : state.isActive
+            ? 50
+            : 100 // active = in progress, inactive = complete
       return {
         totalSaved,
         progress,
-        progressLabel: softGoal > 0
-          ? `${totalSaved.toFixed(2)} / ${softGoal.toFixed(2)} XLM`
-          : `${totalSaved.toFixed(2)} XLM saved`,
+        progressLabel:
+          softGoal > 0
+            ? `${totalSaved.toFixed(2)} / ${softGoal.toFixed(2)} XLM`
+            : `${totalSaved.toFixed(2)} XLM saved`,
       }
     }
   } catch {
@@ -99,11 +108,6 @@ export function MyGroups({ onCreateClick }: MyGroupsProps) {
   const [pools, setPools] = useState<PoolWithLive[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-
-  useEffect(() => {
-    if (!address) { setLoading(false); return }
-    loadPools()
-  }, [address])
 
   const loadPools = async () => {
     try {
@@ -122,7 +126,12 @@ export function MyGroups({ onCreateClick }: MyGroupsProps) {
       const enriched = await Promise.all(
         base.map(async (pool) => {
           const live = await fetchLiveBalance(pool)
-          return { ...pool, liveTotalSaved: live.totalSaved, liveProgress: live.progress, progressLabel: live.progressLabel }
+          return {
+            ...pool,
+            liveTotalSaved: live.totalSaved,
+            liveProgress: live.progress,
+            progressLabel: live.progressLabel,
+          }
         })
       )
       setPools(enriched)
@@ -133,46 +142,74 @@ export function MyGroups({ onCreateClick }: MyGroupsProps) {
     }
   }
 
+  useEffect(() => {
+    if (!address) {
+      setLoading(false)
+      return
+    }
+    loadPools()
+  }, [address])
+
   const formatXlm = (amount: number | null | undefined) =>
     amount ? `${amount.toFixed(2)} XLM` : "0 XLM"
 
-  if (loading) return (
-    <div className="space-y-6">
-      <div><h2 className="text-3xl font-bold">My Groups</h2></div>
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  if (loading)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold">My Groups</h2>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </div>
-    </div>
-  )
+    )
 
-  if (error) return (
-    <div className="space-y-6">
-      <div><h2 className="text-3xl font-bold">My Groups</h2></div>
-      <Card className="p-6 bg-destructive/10 text-destructive"><p>{error}</p></Card>
-    </div>
-  )
+  if (error)
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold">My Groups</h2>
+        </div>
+        <Card className="p-6 bg-destructive/10 text-destructive">
+          <p>{error}</p>
+        </Card>
+      </div>
+    )
 
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-between"
+      >
         <div>
           <h2 className="text-3xl font-bold">My Groups</h2>
           <p className="text-muted-foreground mt-1">
-            {pools.length === 0 ? "Manage your savings circles" : `${pools.length} active group${pools.length !== 1 ? "s" : ""}`}
+            {pools.length === 0
+              ? "Manage your savings circles"
+              : `${pools.length} active group${pools.length !== 1 ? "s" : ""}`}
           </p>
         </div>
       </motion.div>
 
       {pools.length === 0 ? (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <Card className="p-12 text-center">
             <div className="max-w-md mx-auto">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mx-auto mb-4">
                 <Users className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-2">No groups yet</h3>
-              <p className="text-muted-foreground mb-6">Create your first savings group or join an existing one</p>
+              <p className="text-muted-foreground mb-6">
+                Create your first savings group or join an existing one
+              </p>
               <Button className="bg-primary hover:bg-primary/90" onClick={onCreateClick}>
                 Create Your First Group
               </Button>
@@ -180,8 +217,12 @@ export function MyGroups({ onCreateClick }: MyGroupsProps) {
           </Card>
         </motion.div>
       ) : (
-        <motion.div variants={container} initial="hidden" animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           {pools.map((pool) => {
             const totalSaved = pool.liveTotalSaved ?? pool.total_saved ?? 0
             const progress = pool.liveProgress ?? pool.progress ?? 0
@@ -191,21 +232,27 @@ export function MyGroups({ onCreateClick }: MyGroupsProps) {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-xl font-semibold mb-1">{pool.name}</h3>
-                      <Badge variant="secondary">{pool.type.charAt(0).toUpperCase() + pool.type.slice(1)}</Badge>
+                      <Badge variant="secondary">
+                        {pool.type.charAt(0).toUpperCase() + pool.type.slice(1)}
+                      </Badge>
                     </div>
-                    <Badge className="bg-primary/10 text-primary hover:bg-primary/20">{pool.status}</Badge>
+                    <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
+                      {pool.status}
+                    </Badge>
                   </div>
 
                   <div className="space-y-3 mb-4 flex-1">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground flex items-center gap-2">
-                        <Users className="h-4 w-4" />Members
+                        <Users className="h-4 w-4" />
+                        Members
                       </span>
                       <span className="font-medium">{pool.members_count}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />Total Saved
+                        <TrendingUp className="h-4 w-4" />
+                        Total Saved
                       </span>
                       <span className="font-medium">{formatXlm(totalSaved)}</span>
                     </div>

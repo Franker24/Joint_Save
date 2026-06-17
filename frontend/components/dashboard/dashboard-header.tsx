@@ -23,9 +23,7 @@ export function DashboardHeader() {
   const { toast } = useToast()
   const [copied, setCopied] = useState(false)
 
-  const truncatedAddress = address
-    ? `${address.slice(0, 4)}...${address.slice(-4)}`
-    : ""
+  const truncatedAddress = address ? `${address.slice(0, 4)}...${address.slice(-4)}` : ""
 
   const explorerUrl =
     address && walletId
@@ -80,7 +78,11 @@ export function DashboardHeader() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleCopyAddress}>
-                    {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                    {copied ? (
+                      <Check className="mr-2 h-4 w-4" />
+                    ) : (
+                      <Copy className="mr-2 h-4 w-4" />
+                    )}
                     {copied ? "Copied" : "Copy Address"}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -95,10 +97,7 @@ export function DashboardHeader() {
                     </a>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleDisconnect}
-                    variant="destructive"
-                  >
+                  <DropdownMenuItem onClick={handleDisconnect} variant="destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     Disconnect Wallet
                   </DropdownMenuItem>

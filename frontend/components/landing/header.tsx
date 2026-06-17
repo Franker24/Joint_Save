@@ -21,9 +21,7 @@ export function Header() {
   const { toast } = useToast()
   const [copied, setCopied] = useState(false)
 
-  const truncatedAddress = address
-    ? `${address.slice(0, 4)}...${address.slice(-4)}`
-    : ""
+  const truncatedAddress = address ? `${address.slice(0, 4)}...${address.slice(-4)}` : ""
 
   const explorerUrl =
     address && walletId
@@ -50,10 +48,10 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden">
-              <Image 
-                src="/joint-save.jpg" 
-                alt="JointSave Logo" 
-                width={40} 
+              <Image
+                src="/joint-save.jpg"
+                alt="JointSave Logo"
+                width={40}
                 height={40}
                 className="object-cover"
               />
@@ -62,13 +60,22 @@ export function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#features"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Features
             </Link>
-            <Link href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#how-it-works"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               How It Works
             </Link>
-            <Link href="#security" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#security"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
               Security
             </Link>
           </nav>
@@ -94,7 +101,11 @@ export function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleCopyAddress}>
-                    {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                    {copied ? (
+                      <Check className="mr-2 h-4 w-4" />
+                    ) : (
+                      <Copy className="mr-2 h-4 w-4" />
+                    )}
                     {copied ? "Copied" : "Copy Address"}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -109,10 +120,7 @@ export function Header() {
                     </a>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleDisconnect}
-                    variant="destructive"
-                  >
+                  <DropdownMenuItem onClick={handleDisconnect} variant="destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     Disconnect Wallet
                   </DropdownMenuItem>

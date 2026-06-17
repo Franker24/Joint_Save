@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Plus, X, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useStellar } from "@/components/web3-provider"
@@ -33,7 +39,9 @@ export function RotationalForm() {
   // Creator is always the first member (read-only), others are editable
   const [members, setMembers] = useState<string[]>([""])
   const [error, setError] = useState("")
-  const [step, setStep] = useState<"idle" | "deploying" | "initializing" | "registering" | "saving">("idle")
+  const [step, setStep] = useState<
+    "idle" | "deploying" | "initializing" | "registering" | "saving"
+  >("idle")
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -53,14 +61,17 @@ export function RotationalForm() {
   const addMember = () => setMembers([...members, ""])
   const removeMember = (i: number) => setMembers(members.filter((_, idx) => idx !== i))
   const updateMember = (i: number, v: string) => {
-    const next = [...members]; next[i] = v; setMembers(next)
+    const next = [...members]
+    next[i] = v
+    setMembers(next)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     if (!address) return setError("Please connect your wallet first")
-    if (validMembers.length < 2) return setError("Need at least 2 valid Stellar addresses (you + 1 other)")
+    if (validMembers.length < 2)
+      return setError("Need at least 2 valid Stellar addresses (you + 1 other)")
     if (!formData.name) return setError("Please enter a group name")
     if (!formData.contributionAmount) return setError("Please enter a contribution amount")
 
@@ -72,12 +83,13 @@ export function RotationalForm() {
       // 2. Initialize the contract onchain
       setStep("initializing")
       await initRotational(contractId, {
-        token: TOKEN === "native" ? "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC" : TOKEN,
+        token:
+          TOKEN === "native" ? "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC" : TOKEN,
         members: validMembers,
         depositAmount: formData.contributionAmount,
         roundDuration: FREQUENCY_SECONDS[formData.frequency],
         treasuryFeeBps: 100, // 1%
-        relayerFeeBps: 50,   // 0.5%
+        relayerFeeBps: 50, // 0.5%
         treasury: TREASURY,
       })
 
@@ -85,8 +97,9 @@ export function RotationalForm() {
       setStep("registering")
       try {
         await register(address, contractId)
-      } catch (regErr: any) {
-        console.warn("Factory registration skipped:", regErr.message)
+      } catch (regErr) {
+        const msg = regErr instanceof Error ? regErr.message : String(regErr)
+        console.warn("Factory registration skipped:", msg)
       }
 
       // 4. Save metadata to DB
@@ -110,8 +123,9 @@ export function RotationalForm() {
       if (!res.ok) throw new Error("Failed to save pool metadata")
       const pool = await res.json()
       router.push(`/dashboard/group/${pool.id}`)
-    } catch (err: any) {
-      setError(err.message || "Failed to create group")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to create group"
+      setError(msg)
       setStep("idle")
     }
   }
@@ -142,26 +156,48 @@ export function RotationalForm() {
 
       <div className="space-y-2">
         <Label htmlFor="name">Group Name</Label>
-        <Input id="name" placeholder="e.g., Family Savings Circle" value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+        <Input
+          id="name"
+          placeholder="e.g., Family Savings Circle"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="description">Description (Optional)</Label>
-        <Textarea id="description" placeholder="Describe the purpose of this savings group"
-          value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
+        <Textarea
+          id="description"
+          placeholder="Describe the purpose of this savings group"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          rows={3}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="amount">Contribution Amount (XLM)</Label>
-          <Input id="amount" type="number" step="0.01" placeholder="100" value={formData.contributionAmount}
-            onChange={(e) => setFormData({ ...formData, contributionAmount: e.target.value })} required />
+          <Input
+            id="amount"
+            type="number"
+            step="0.01"
+            placeholder="100"
+            value={formData.contributionAmount}
+            onChange={(e) => setFormData({ ...formData, contributionAmount: e.target.value })}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="frequency">Payout Frequency</Label>
-          <Select value={formData.frequency} onValueChange={(v) => setFormData({ ...formData, frequency: v })}>
-            <SelectTrigger id="frequency"><SelectValue /></SelectTrigger>
+          <Select
+            value={formData.frequency}
+            onValueChange={(v) => setFormData({ ...formData, frequency: v })}
+          >
+            <SelectTrigger id="frequency">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="daily">Daily</SelectItem>
               <SelectItem value="weekly">Weekly</SelectItem>
@@ -176,18 +212,28 @@ export function RotationalForm() {
         <div className="flex items-center justify-between">
           <Label>Member Stellar Addresses</Label>
           <Button type="button" variant="outline" size="sm" onClick={addMember}>
-            <Plus className="h-4 w-4 mr-1" />Add Member
+            <Plus className="h-4 w-4 mr-1" />
+            Add Member
           </Button>
         </div>
         <div className="space-y-3">
           {/* Creator — always included, read-only */}
           <div className="flex gap-2 items-center">
-            <Input value={address || ""} readOnly disabled className="font-mono text-xs opacity-70" />
+            <Input
+              value={address || ""}
+              readOnly
+              disabled
+              className="font-mono text-xs opacity-70"
+            />
             <span className="text-xs text-muted-foreground whitespace-nowrap">You</span>
           </div>
           {members.map((member, i) => (
             <div key={i} className="flex gap-2">
-              <Input placeholder="G..." value={member} onChange={(e) => updateMember(i, e.target.value)} />
+              <Input
+                placeholder="G..."
+                value={member}
+                onChange={(e) => updateMember(i, e.target.value)}
+              />
               {members.length > 1 && (
                 <Button type="button" variant="ghost" size="icon" onClick={() => removeMember(i)}>
                   <X className="h-4 w-4" />
@@ -205,11 +251,26 @@ export function RotationalForm() {
             <li>Members: {validMembers.length}</li>
             <li>Contribution per Member: {formData.contributionAmount || "0"} XLM</li>
             <li>Payout Frequency: {formData.frequency}</li>
-            <li>Total Pool: {(parseFloat(formData.contributionAmount || "0") * validMembers.length).toFixed(2)} XLM</li>
+            <li>
+              Total Pool:{" "}
+              {(parseFloat(formData.contributionAmount || "0") * validMembers.length).toFixed(2)}{" "}
+              XLM
+            </li>
           </ul>
         </div>
-        <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isCreating}>
-          {isCreating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{stepLabel[step]}</> : "Create Rotational Group"}
+        <Button
+          type="submit"
+          className="w-full bg-primary hover:bg-primary/90"
+          disabled={isCreating}
+        >
+          {isCreating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {stepLabel[step]}
+            </>
+          ) : (
+            "Create Rotational Group"
+          )}
         </Button>
       </div>
     </form>

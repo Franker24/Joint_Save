@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { Card } from "@/components/ui/card"
@@ -6,17 +7,13 @@ import { useStellar } from "@/components/web3-provider"
 import { Wallet, Award, TrendingUp, Users, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase"
-import {
-  fetchTargetState,
-  fetchFlexibleState,
-  stroopsToXlm,
-} from "@/hooks/useJointSaveContracts"
+import { fetchTargetState, fetchFlexibleState, stroopsToXlm } from "@/hooks/useJointSaveContracts"
 
 interface ProfileStats {
-  totalSaved: number        // live on-chain XLM across all pools
-  groupsJoined: number      // distinct pools the address is a member of
+  totalSaved: number // live on-chain XLM across all pools
+  groupsJoined: number // distinct pools the address is a member of
   successfulPayouts: number // payout/withdraw activity count
-  reputation: number        // 0-100 derived from on-chain behaviour
+  reputation: number // 0-100 derived from on-chain behaviour
 }
 
 async function fetchProfileStats(address: string): Promise<ProfileStats> {
@@ -28,9 +25,7 @@ async function fetchProfileStats(address: string): Promise<ProfileStats> {
     .select("pool_id, pools(id, type, contract_address, target_amount)")
     .eq("member_address", lower)
 
-  const pools: any[] = (memberships || [])
-    .map((m: any) => m.pools)
-    .filter(Boolean)
+  const pools: any[] = (memberships || []).map((m: any) => m.pools).filter(Boolean)
 
   // Fetch activity for reputation signals
   const { data: activity } = await supabase
@@ -63,7 +58,10 @@ async function fetchProfileStats(address: string): Promise<ProfileStats> {
   )
 
   // Reputation: starts at 50, +5 per deposit (max +40), +10 per payout (max +10)
-  const reputation = Math.min(100, 50 + Math.min(depositCount * 5, 40) + Math.min(payoutCount * 10, 10))
+  const reputation = Math.min(
+    100,
+    50 + Math.min(depositCount * 5, 40) + Math.min(payoutCount * 10, 10)
+  )
 
   return {
     totalSaved,
@@ -79,15 +77,19 @@ export function Profile() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!address) { setLoading(false); return }
+    if (!address) {
+      setLoading(false)
+      return
+    }
     fetchProfileStats(address)
       .then(setStats)
-      .catch(() => setStats({ totalSaved: 0, groupsJoined: 0, successfulPayouts: 0, reputation: 50 }))
+      .catch(() =>
+        setStats({ totalSaved: 0, groupsJoined: 0, successfulPayouts: 0, reputation: 50 })
+      )
       .finally(() => setLoading(false))
   }, [address])
 
-  const fmt = (n: number) =>
-    n >= 1000 ? `${(n / 1000).toFixed(1)}k XLM` : `${n.toFixed(2)} XLM`
+  const fmt = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k XLM` : `${n.toFixed(2)} XLM`)
 
   return (
     <div className="space-y-6">
@@ -117,7 +119,9 @@ export function Profile() {
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 ) : (
-                  <span className="text-2xl font-bold text-primary">{stats?.reputation ?? 50}%</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {stats?.reputation ?? 50}%
+                  </span>
                 )}
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -131,7 +135,11 @@ export function Profile() {
             <div className="pt-4 border-t border-border">
               <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
                 <Award className="h-3 w-3 mr-1" />
-                {(stats?.reputation ?? 0) >= 80 ? "Trusted Member" : (stats?.reputation ?? 0) >= 60 ? "Active Saver" : "New Member"}
+                {(stats?.reputation ?? 0) >= 80
+                  ? "Trusted Member"
+                  : (stats?.reputation ?? 0) >= 60
+                    ? "Active Saver"
+                    : "New Member"}
               </Badge>
             </div>
           </div>
@@ -182,7 +190,8 @@ export function Profile() {
       <Card className="p-6 bg-muted/30">
         <h3 className="text-lg font-semibold mb-2">About Reputation Score</h3>
         <p className="text-muted-foreground text-sm mb-4">
-          Your reputation score is calculated from your on-chain savings activity — deposits, payouts, and group participation.
+          Your reputation score is calculated from your on-chain savings activity — deposits,
+          payouts, and group participation.
         </p>
         <ul className="space-y-2 text-sm">
           {[

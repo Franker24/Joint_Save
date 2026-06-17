@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, no-empty */
 "use client"
 
 import { useState } from "react"
@@ -13,11 +14,7 @@ import {
   Operation,
   StrKey,
 } from "@stellar/stellar-sdk"
-import {
-  useStellar,
-  STELLAR_RPC_URL,
-  STELLAR_NETWORK_PASSPHRASE,
-} from "@/components/web3-provider"
+import { useStellar, STELLAR_RPC_URL, STELLAR_NETWORK_PASSPHRASE } from "@/components/web3-provider"
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -41,8 +38,7 @@ export function getRpc() {
 // Stellar strkeys are case-insensitive but the SDK requires uppercase
 const normalizeId = (id: string) => id.toUpperCase()
 
-const toStroops = (xlm: string): bigint =>
-  BigInt(Math.round(parseFloat(xlm) * XLM_STROOPS))
+const toStroops = (xlm: string): bigint => BigInt(Math.round(parseFloat(xlm) * XLM_STROOPS))
 
 // Works for both G... account and C... contract addresses
 function addressVal(addr: string): xdr.ScVal {
@@ -95,10 +91,7 @@ async function submitTx(kit: any, tx: any): Promise<string> {
   // Poll for confirmation
   let getResult = await server.getTransaction(result.hash)
   let attempts = 0
-  while (
-    getResult.status === rpc.Api.GetTransactionStatus.NOT_FOUND &&
-    attempts < 30
-  ) {
+  while (getResult.status === rpc.Api.GetTransactionStatus.NOT_FOUND && attempts < 30) {
     await new Promise((r) => setTimeout(r, 1500))
     getResult = await server.getTransaction(result.hash)
     attempts++
@@ -162,10 +155,7 @@ export function useDeployPool() {
       // Poll and extract new contract ID from return value
       let getResult = await server.getTransaction(result.hash)
       let attempts = 0
-      while (
-        getResult.status === rpc.Api.GetTransactionStatus.NOT_FOUND &&
-        attempts < 30
-      ) {
+      while (getResult.status === rpc.Api.GetTransactionStatus.NOT_FOUND && attempts < 30) {
         await new Promise((r) => setTimeout(r, 1500))
         getResult = await server.getTransaction(result.hash)
         attempts++
@@ -391,7 +381,9 @@ export function useTriggerPayout(contractId: string) {
         fee: BASE_FEE,
         networkPassphrase: STELLAR_NETWORK_PASSPHRASE,
       })
-        .addOperation(new Contract(normalizeId(contractId)).call("trigger_payout", addressVal(address)))
+        .addOperation(
+          new Contract(normalizeId(contractId)).call("trigger_payout", addressVal(address))
+        )
         .setTimeout(TX_TIMEOUT)
         .build()
       return await submitTx(kit, tx)
@@ -419,7 +411,11 @@ export function useTargetContribute(contractId: string, amount: string) {
         networkPassphrase: STELLAR_NETWORK_PASSPHRASE,
       })
         .addOperation(
-          new Contract(normalizeId(contractId)).call("deposit", addressVal(address), i128Val(toStroops(amount)))
+          new Contract(normalizeId(contractId)).call(
+            "deposit",
+            addressVal(address),
+            i128Val(toStroops(amount))
+          )
         )
         .setTimeout(TX_TIMEOUT)
         .build()
@@ -498,7 +494,11 @@ export function useFlexibleDeposit(contractId: string, amount: string) {
         networkPassphrase: STELLAR_NETWORK_PASSPHRASE,
       })
         .addOperation(
-          new Contract(normalizeId(contractId)).call("deposit", addressVal(address), i128Val(toStroops(amount)))
+          new Contract(normalizeId(contractId)).call(
+            "deposit",
+            addressVal(address),
+            i128Val(toStroops(amount))
+          )
         )
         .setTimeout(TX_TIMEOUT)
         .build()
@@ -525,7 +525,11 @@ export function useFlexibleWithdraw(contractId: string, amount: string) {
         networkPassphrase: STELLAR_NETWORK_PASSPHRASE,
       })
         .addOperation(
-          new Contract(normalizeId(contractId)).call("withdraw", addressVal(address), i128Val(toStroops(amount)))
+          new Contract(normalizeId(contractId)).call(
+            "withdraw",
+            addressVal(address),
+            i128Val(toStroops(amount))
+          )
         )
         .setTimeout(TX_TIMEOUT)
         .build()
@@ -544,8 +548,8 @@ export interface RotationalPoolState {
   isActive: boolean
   currentRound: number
   members: string[]
-  nextPayoutTime: number   // unix timestamp (seconds)
-  hasDeposited: boolean    // for the querying user
+  nextPayoutTime: number // unix timestamp (seconds)
+  hasDeposited: boolean // for the querying user
 }
 
 export interface TargetPoolState {
@@ -568,7 +572,11 @@ export function stroopsToXlm(stroops: bigint): number {
 }
 
 /** Fire-and-forget read call — no signing, no fee. */
-async function viewCall(contractId: string, method: string, ...args: xdr.ScVal[]): Promise<xdr.ScVal> {
+async function viewCall(
+  contractId: string,
+  method: string,
+  ...args: xdr.ScVal[]
+): Promise<xdr.ScVal> {
   const server = getRpc()
   // Use a dummy account for simulation — sequence number doesn't matter for reads
   const dummyAccount = {
@@ -627,9 +635,8 @@ export async function fetchRotationalState(
     viewCall(contractId, "next_payout_time"),
   ])
 
-  const members = activeVal.switch().name !== "scvBool"
-    ? []
-    : membersVal.vec()?.map(scValToString) ?? []
+  const members =
+    activeVal.switch().name !== "scvBool" ? [] : (membersVal.vec()?.map(scValToString) ?? [])
 
   let hasDeposited = false
   if (userAddress) {
@@ -715,10 +722,7 @@ export async function fetchContractEvents(
     if (!topics.length) continue
 
     // First topic is always the event name symbol
-    const topicName =
-      topics[0].switch().name === "scvSymbol"
-        ? topics[0].sym().toString()
-        : null
+    const topicName = topics[0].switch().name === "scvSymbol" ? topics[0].sym().toString() : null
     if (!topicName) continue
 
     // Second topic (optional) is the address
@@ -769,9 +773,7 @@ export async function fetchContractEvents(
   }
 
   // Most-recent first
-  return events.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )
+  return events.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
 
 export async function fetchFlexibleState(
